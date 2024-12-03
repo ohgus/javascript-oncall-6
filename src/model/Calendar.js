@@ -6,6 +6,8 @@ import {
   WEEKEND,
 } from '../constant/month.js';
 
+import calculateIndex from '../util/indexCalculator.js';
+
 class Calendar {
   #month;
   #holiday;
@@ -66,56 +68,87 @@ class Calendar {
   }
 
   setSchedule(weekOrder, weekendOrder) {
-    let weekOrderIndex = 0;
-    let weekendOrderIndex = 0;
+    let weekdayIndex = 0;
+    let weekendIndex = 0;
     let lastWorker = '';
-    let weekNeedToWork = '';
-    let weekendNeedToWork = '';
+    let weekdayNeedWork = '';
+    let weekendNeedWork = '';
 
     this.#calendar.forEach((dayInfo) => {
       if (dayInfo.isHoliday || dayInfo.isWeekend) {
-        if (weekendNeedToWork !== '') {
-          dayInfo.worker = weekendNeedToWork;
-          lastWorker = weekendNeedToWork;
-          weekendNeedToWork = '';
-          return;
-        }
+        this.#scheduleProcess(
+          dayInfo,
+          weekendNeedWork,
+          lastWorker,
+          weekendOrder,
+          weekendIndex,
+        );
 
-        if (weekendOrder[weekendOrderIndex] === lastWorker) {
-          dayInfo.worker =
-            weekendOrder[(weekendOrderIndex + 1) % weekendOrder.length];
-          weekendNeedToWork = weekendOrder[weekendOrderIndex];
-          lastWorker =
-            weekendOrder[(weekendOrderIndex + 1) % weekendOrder.length];
-          weekendOrderIndex = (weekendOrderIndex + 2) % weekendOrder.length;
-          return;
-        }
+        const { index, worked, needWork } = this.#updateIndices(
+          weekendOrder,
+          weekendIndex,
+          lastWorker,
+          weekendNeedWork,
+        );
 
-        dayInfo.worker = weekendOrder[weekendOrderIndex];
-        lastWorker = weekendOrder[weekendOrderIndex];
-        weekendOrderIndex = (weekendOrderIndex + 1) % weekendOrder.length;
-        return;
+        weekendIndex = index;
+        lastWorker = worked;
+        weekendNeedWork = needWork;
+      } else {
+        this.#scheduleProcess(
+          dayInfo,
+          weekdayNeedWork,
+          lastWorker,
+          weekOrder,
+          weekdayIndex,
+        );
+        const { index, worked, needWork } = this.#updateIndices(
+          weekOrder,
+          weekdayIndex,
+          lastWorker,
+          weekdayNeedWork,
+        );
+
+        weekdayIndex = index;
+        lastWorker = worked;
+        weekdayNeedWork = needWork;
       }
-
-      if (weekNeedToWork !== '') {
-        dayInfo.worker = weekNeedToWork;
-        lastWorker = weekNeedToWork;
-        weekNeedToWork = '';
-        return;
-      }
-
-      if (lastWorker === weekOrder[weekOrderIndex]) {
-        dayInfo.worker = weekOrder[(weekOrderIndex + 1) % weekOrder.length];
-        weekNeedToWork = weekOrder[weekOrderIndex];
-        lastWorker = weekOrder[(weekOrderIndex + 1) % weekOrder.length];
-        weekOrderIndex = (weekOrderIndex + 2) % weekOrder.length;
-        return;
-      }
-
-      dayInfo.worker = weekOrder[weekOrderIndex];
-      lastWorker = weekOrder[weekOrderIndex];
-      weekOrderIndex = (weekOrderIndex + 1) % weekOrder.length;
     });
+  }
+
+  #scheduleProcess(dayInfo, needWork, lastWorker, order, index) {
+    if (needWork !== '') {
+      dayInfo.worker = needWork;
+      return;
+    }
+
+    if (lastWorker === order[index]) {
+      dayInfo.worker = order[(index + 1) % order.length];
+      return;
+    }
+
+    dayInfo.worker = order[index];
+  }
+
+  #updateIndices(order, index, lastWorker, needWork) {
+    let worked = '';
+
+    if (needWork !== '') {
+      worked = needWork;
+      needWork = '';
+      return { index, worked, needWork };
+    }
+
+    if (lastWorker === order[index]) {
+      needWork = order[index];
+      worked = order[(index + 1) % order.length];
+      index = calculateIndex.worked(order, index);
+      return { index, worked, needWork };
+    }
+
+    worked = order[index];
+    index = calculateIndex.normal(order, index);
+    return { index, worked, needWork };
   }
 }
 
