@@ -9,12 +9,10 @@ import {
 import calculateIndex from '../util/indexCalculator.js';
 
 class Calendar {
-  #month;
   #holiday;
   #calendar;
 
   constructor(month, startDay) {
-    this.#month = month;
     this.#holiday = HOLIDAY[month];
     this.#calendar = this.#createCalendar(month, startDay);
   }
