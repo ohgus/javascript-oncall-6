@@ -28,19 +28,23 @@ class Calendar {
     let dayIndex = DAY_INDEX[startDay];
 
     while (date <= endDate) {
-      const dayInfo = {
-        date,
-        day: DAY[dayIndex],
-        isHoliday: this.#isHoliday(date),
-        isWeekend: this.#isWeekend(DAY[dayIndex]),
-        worker: '',
-      };
+      const dayInfo = this.#createDayInfo(date, dayIndex);
       calendar.push(dayInfo);
       date += 1;
       dayIndex = (dayIndex + 1) % 7;
     }
 
     return calendar;
+  }
+
+  #createDayInfo(date, dayIndex) {
+    return {
+      date,
+      day: DAY[dayIndex],
+      isHoliday: this.#isHoliday(date),
+      isWeekend: this.#isWeekend(DAY[dayIndex]),
+      worker: '',
+    };
   }
 
   #getEndDate(month) {
