@@ -8,6 +8,18 @@ const InputView = {
 
     return input;
   },
+
+  async readWeekday() {
+    const input = await Console.readLineAsync(INPUT_MESSAGE.weekday);
+
+    return input;
+  },
+
+  async readWeekend() {
+    const input = await Console.readLineAsync(INPUT_MESSAGE.weekend);
+
+    return input;
+  },
 };
 
 export default InputView;
