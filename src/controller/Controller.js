@@ -7,13 +7,22 @@ import {
   validateWeekday,
   validateWeekend,
 } from '../util/validator/workOrder.js';
+import Schedule from '../model/Schedule.js';
 
 class Controller {
+  #schedule;
+
   async play() {
     const [month, day] = await tryInput(() => this.#readMonthDay());
+    this.#setSchedule(month, day);
+
     const [weekdayOrder, weekendOrder] = await tryInput(() =>
       this.#readOrders(),
     );
+  }
+
+  #setSchedule(month, day) {
+    this.#schedule = new Schedule(month, day);
   }
 
   async #readMonthDay() {
